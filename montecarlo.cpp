@@ -19,7 +19,7 @@ double random_nr(float miuTotal){
     return x;
 }
 
-vector<double> monteCarlo(float miuTotal, unsigned int L = 10000 , string filename = "feixeMonocromatico.txt"){
+int monteCarlo(float miuTotal, unsigned int L = 10000 , string filename = "feixeMonocromatico.txt"){
 	//lei de atenuação    -> I = I0 e^(-miuTotal*x)
 	ofstream testeFile(filename);
 	
@@ -46,6 +46,7 @@ vector<double> monteCarlo(float miuTotal, unsigned int L = 10000 , string filena
 	
 	
 	
+	
 	//grafico
 	vector<int> ss(L,0);
 	for(int i = 0; i< L; i++){
@@ -58,9 +59,19 @@ vector<double> monteCarlo(float miuTotal, unsigned int L = 10000 , string filena
 		//testeFile << s[i] << endl;
 	}
 	
+	//espessura para a qual a intensidade do feixe passa para metade
+	
+	int i = 0;
+	while( ss[i] > 5000000){
+			i++;
+		}
+	cout << X[i] << "m é a espessura para a qual a intensidade do feixe para para metade! (3.1)"<< endl;
+	
+	
+	
 	
 	testeFile.close();
-	return s;
+	return 0;
 	
 	
 
@@ -138,12 +149,19 @@ int ex32(vector<double> vec){
 	 }
 	vector<double> miuT = NIST();
 	
+	int L = 100000;
+	vector<unsigned int> s(L, 0);
+	vector<double> X(1000000, 0);
+	float dx = pow(10, -4);
+	
+	ofstream testefile ("TesteNEW.txt");
+	
 	for (int i = 0; i < 1000000; i++){
 		double y = (double) drand48(); // gerar random nr
 		bool flag = false;
 		int j = 0;
 		
-		int bin;
+		int bin;		
 		
 		while( j!= cdfnorm.size() && flag != true){ 
 			//cout << probs_ord[j] << " probabilidade" << endl;
@@ -159,27 +177,74 @@ int ex32(vector<double> vec){
 		}// -----> vê em que bin fica o eletrão
 		
 		int energia1 = bin;
-		double miuTassociadoE1 = miuT[energia1];
-		vector<double> distribuicaoFotoes = monteCarlo(miuTassociadoE1, 10000 ,"FeixePolicromatico.txt");
+		double miuTassociadoE1 = miuT[energia1]; // cm^-1
+		//cout << miuTassociadoE1 << endl;
+		
+		//montecarlo
+		
+		double x = -(log(1-drand48()))/miuTassociadoE1;
+		//testefile << x << endl;		
 		
 		
-		//cout << j << endl;
+		int delta =  x/dx;
+		
+		//cout << delta << "\t" << x << endl;
+		
+		if (delta > L -1){
+			s[L-1]++;
+		} else {
+			s[delta]++;
+		}
+		X[i] = x;
+		}
 		
 		
+	ofstream fpoli("FeixePolicromatico.txt");
 		
+	vector<int> ss(L,0);
+	for(int i = 0; i< L; i++){
+		if(i==0){
+			ss[i] = 1000000 -s[i];
+		} else {
+			ss[i] = ss[i-1]-s[i];
+		}
+		fpoli <<log((double)  ss[i] /1000000) << endl;
 		
+	}
 		
+	//espessura para a qual a intensidade do feixe passa para metade
 	
+	int i = 0;
+	while( ss[i] > 5000000){
+			i++;
+		}
+	cout << X[i] << "m é a espessura para a qual a intensidade do feixe para para metade! (3.2)"<< endl;
 	
+	testefile.close();
+	fpoli.close();
 	
+	//linear regression
 	
+	int n;
 	
-	}  
-	//    NIST file Z = 42
+	double x[L], y[L], sumX = 0, sumX2 = 0, sumY = 0, sumXY = 0, a, b;
 	
+	for(int i = 1; i <= L; i++){
+		x[i] = i * dx;
+		y[i] = log((double)  ss[i] /1000000);
+	}
 	
-	
-	
+	for(int i=1;i<=n;i++){
+		sumX = sumX + x[i];
+  		sumX2 = sumX2 + x[i]*x[i];
+  		sumY = sumY + y[i];
+  		sumXY = sumXY + x[i]*y[i];
+	}
+
+	b = (n*sumXY-sumX*sumY)/(n*sumX2-sumX*sumX);
+ 	a = (sumY - b*sumX)/n;
+	cout << a << "\t" << "-> declive (3.2)" << endl;
+	cout << b << "\t" << "-> ordenada (3.2)" << endl;
 	
 	
 	
@@ -191,17 +256,15 @@ int ex32(vector<double> vec){
 
 int main() {
 	//data
-	float miuF = 3.19* pow (10,3)*pow(10,-2) ; //m^-1
-	float miuR = 6.09 *pow(10,-2); //m^-1
-	float miuC = 3.83 * pow(10,-2)*pow(10,-2); //m^-1
-	float miuTotal = miuF + miuR + miuC; //m^-1
-	float energiaFeixeMono = 1*pow(10,3); //eV
+	float miuF = 3.19* pow (10,3) ; //cm^-1
+	float miuR = 6.09 ; //cm^-1
+	float miuC = 3.83 * pow(10,-2); //cm^-1
+	float miuTotal = miuF + miuR + miuC; //cm^-1
 	
-	//monteCarlo(miuTotal, energiaFeixeMono);
+	monteCarlo(miuTotal);
 	
 	vector<double> vec = distribuicaoFeixePoli();
-	 ex32(vec);
-	 //NIST();
+	ex32(vec);
 
     
     return 0;
