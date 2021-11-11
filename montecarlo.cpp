@@ -45,7 +45,7 @@ int monteCarlo(float miuTotal, unsigned int L = 10000 , string filename = "feixe
 	}
 	
 	
-	
+	ofstream teste ("holo.txt");
 	
 	//grafico
 	vector<int> ss(L,0);
@@ -56,16 +56,18 @@ int monteCarlo(float miuTotal, unsigned int L = 10000 , string filename = "feixe
 			ss[i] = ss[i-1]-s[i];
 		}
 		testeFile <<log((double)  ss[i] /1000000) << endl;
-		//testeFile << s[i] << endl;
+		teste << ss[i] << endl;
 	}
 	
 	//espessura para a qual a intensidade do feixe passa para metade
 	
 	int i = 0;
-	while( ss[i] > 5000000){
+	int sum = 0;
+	while( sum < 500000){
+		sum = sum + s[i];
 			i++;
 		}
-	cout << X[i] << "m é a espessura para a qual a intensidade do feixe para para metade! (3.1)"<< endl;
+	cout << (double) dx*i << "cm é a espessura para a qual a intensidade do feixe para para metade! (3.1)"<< endl;
 	
 	
 	
@@ -104,7 +106,7 @@ vector<double> distribuicaoFeixePoli() {
 vector<double> NIST(){
 	vector <string> filedata;
 	ifstream nist;
-	nist.open("NIST.txt");
+	nist.open("neves.txt");
 	
 	double Energy[100];
 	double miuR[100];
@@ -215,10 +217,12 @@ int ex32(vector<double> vec){
 	//espessura para a qual a intensidade do feixe passa para metade
 	
 	int i = 0;
-	while( ss[i] > 5000000){
+	int sum = 0;
+	while( sum < 500000){
+		sum = sum + s[i];
 			i++;
 		}
-	cout << X[i] << "m é a espessura para a qual a intensidade do feixe para para metade! (3.2)"<< endl;
+	cout << (double) dx*i << "cm é a espessura para a qual a intensidade do feixe para para metade! (3.2)"<< endl;
 	
 	testefile.close();
 	fpoli.close();
@@ -260,6 +264,8 @@ int main() {
 	float miuR = 6.09 ; //cm^-1
 	float miuC = 3.83 * pow(10,-2); //cm^-1
 	float miuTotal = miuF + miuR + miuC; //cm^-1
+	
+	cout << miuTotal << endl;
 	
 	monteCarlo(miuTotal);
 	
