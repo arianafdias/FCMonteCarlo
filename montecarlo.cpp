@@ -21,15 +21,18 @@ double random_nr(float miuTotal){
 
 int monteCarlo(float miuTotal, unsigned int L = 10000 , string filename = "feixeMonocromatico.txt"){
 	//lei de atenuação    -> I = I0 e^(-miuTotal*x)
-	ofstream testeFile(filename);
-	
+	ofstream File(filename);
+	ofstream teste("teste.txt");
 	vector<unsigned int> s(L,0); //a espessura total está dividada em L espaços/bins
 	vector<double> X(1000000,0); // lista dos valores de x 
-	float dx = 1*pow(10,-5);
+	float dx = pow(10,-7);
 	
 	for(int i = 0; i<1000000; i++){
 	
 		double x = random_nr(miuTotal); // espessura que o fotão atravessa, é gerada aleatoriamente
+		
+		teste << x << endl;
+		
 		
 		int bin = (int) (x/dx); 
 		if (bin > L-1){
@@ -50,7 +53,7 @@ int monteCarlo(float miuTotal, unsigned int L = 10000 , string filename = "feixe
 		} else {
 			ss[i] = ss[i-1]-s[i];
 		}
-		testeFile <<log((double)  ss[i] /1000000) << endl;
+		File <<log((double)  ss[i] /1000000) << endl;
 		
 	}
 	
@@ -58,14 +61,14 @@ int monteCarlo(float miuTotal, unsigned int L = 10000 , string filename = "feixe
 	
 	int i = 0;
 	int sum = 0;
-	while( sum < 500000){
+	while( sum <= 500000){
 		sum = sum + s[i];
 			i++;
 		}
 	cout << (double) dx*i << "cm é a espessura para a qual a intensidade do feixe para para metade! (3.1)"<< endl;
 	
-	
-	testeFile.close();
+	teste.close();
+	File.close();
 	return 0;
 	
 	
@@ -149,7 +152,7 @@ int ex32(vector<double> vec, double rho){
 	vector<double> X(1000000, 0);
 	float dx = pow(10, -4);
 	
-	ofstream testefile ("TesteNEW.txt");
+	//ofstream testefile ("TesteNEW.txt");
 	
 	for (int i = 0; i < 1000000; i++){
 		double y = (double) drand48(); // gerar random nr
@@ -168,31 +171,26 @@ int ex32(vector<double> vec, double rho){
 				flag = true;
 			}
 			j++;
-		}// -----> vê em que bin fica o eletrão
+		}// -----> vê em que bin fica o fotao
 		
 		int energia1 = bin;
 		double miuTassociadoE1 = miuT[energia1]; // cm^-1
 		
 		//montecarlo
 		double x = -log(1-drand48())/miuTassociadoE1;
-		testefile << x << endl;		
 		
-		
-		int delta =  x/dx;
-		
-		//cout << delta << "\t" << x << endl;
-		
-		if (delta > L -1){
+		int idx = x/dx;  // vê em que indice/bin se encontra o fotao
+				
+		if (idx > L -1){
 			s[L-1]++;
 		} else {
-			s[delta]++;
+			s[idx]++;
 		}
-		X[i] = x;
-		}
-		
-		
+	}
+	
+	// grafico	
 	ofstream fpoli("FeixePolicromatico.txt");
-	ofstream teste ("holo.txt");	
+		
 	vector<int> ss(L,0);
 	for(int i = 0; i< L; i++){
 		if(i==0){
@@ -201,7 +199,6 @@ int ex32(vector<double> vec, double rho){
 			ss[i] = ss[i-1]-s[i];
 		}
 		fpoli <<log((double)  ss[i] /1000000) << endl;
-		teste << s[i] << endl;
 		
 	}
 		
@@ -215,7 +212,6 @@ int ex32(vector<double> vec, double rho){
 		}
 	cout << (double) i*dx << "cm é a espessura para a qual a intensidade do feixe para para metade! (3.2)"<< endl;
 	
-	testefile.close();
 	fpoli.close();
 	
 	//linear regression
@@ -258,10 +254,10 @@ int main() {
 	
 	//cout << miuTotal << endl;
 	
-	//monteCarlo(miuTotal);
+	monteCarlo(miuTotal);
 	double rho = 1.82;
 	vector<double> vec = distribuicaoFeixePoli();
-	ex32(vec, rho);
+	//ex32(vec, rho);
 
     
     return 0;
