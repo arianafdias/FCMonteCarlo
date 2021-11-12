@@ -94,15 +94,18 @@ vector<double> distribuicaoFeixePoli() {
 		Energy.push_back(energy*pow(10,3)); // ev
 		N.push_back(n*pow(10,-2));			  // m^-2
 	}
-	
-
+	ofstream dist("dist.txt");
+	for(int i = 0; i < N.size(); i++){
+		dist << Energy[i] << "\t" << N[i] << endl;
+	}
+	dist.close();
 	return N;
 	}
 
 vector<double> NIST(double rho){
 	vector <string> filedata;
 	ifstream nist;
-	nist.open("neves.txt");
+	nist.open("NIST.txt");
 	
 	double Energy[100];
 	double miuR[100];
@@ -145,16 +148,17 @@ int ex32(vector<double> vec, double rho){
 	for (int i = 0; i < cdf.size(); i++){
 	 cdfnorm.push_back(cdf[i]/cdf.back()) ;
 	 }
+	 
 	vector<double> miuT = NIST(rho);
 	
 	int L = 100000;
 	vector<unsigned int> s(L, 0);
-	vector<double> X(1000000, 0);
 	float dx = pow(10, -4);
 	
 	//ofstream testefile ("TesteNEW.txt");
 	
 	for (int i = 0; i < 1000000; i++){
+	
 		double y = (double) drand48(); // gerar random nr
 		bool flag = false;
 		int j = 0;
@@ -186,10 +190,12 @@ int ex32(vector<double> vec, double rho){
 		} else {
 			s[idx]++;
 		}
+		
 	}
 	
 	// grafico	
-	ofstream fpoli("FeixePolicromatico.txt");
+	ofstream fpoli("FeixePolicromaticoLog.txt");
+	ofstream help ("help.txt");
 		
 	vector<int> ss(L,0);
 	for(int i = 0; i< L; i++){
@@ -198,7 +204,8 @@ int ex32(vector<double> vec, double rho){
 		} else {
 			ss[i] = ss[i-1]-s[i];
 		}
-		fpoli <<log((double)  ss[i] /1000000) << endl;
+		fpoli <<log((double)  ss[i] /1000000) << endl; // -> log (fracao sobreviventes) 
+		help << (double)i*pow(10,-4) << endl;
 		
 	}
 		
@@ -210,32 +217,9 @@ int ex32(vector<double> vec, double rho){
 		sum = sum + s[i];
 			i++;
 		}
-	cout << (double) i*dx << "cm é a espessura para a qual a intensidade do feixe para para metade! (3.2)"<< endl;
+	cout << (double) (i-1)*dx << "cm é a espessura para a qual a intensidade do feixe para para metade! (3.2)"<< endl;
 	
 	fpoli.close();
-	
-	//linear regression
-	
-	int n;
-	
-	double x[L], y[L], sumX = 0, sumX2 = 0, sumY = 0, sumXY = 0, a, b;
-	
-	for(int i = 1; i <= L; i++){
-		x[i] = i * dx;
-		y[i] = log((double)  ss[i] /1000000);
-	}
-	
-	for(int i=1;i<=n;i++){
-		sumX = sumX + x[i];
-  		sumX2 = sumX2 + x[i]*x[i];
-  		sumY = sumY + y[i];
-  		sumXY = sumXY + x[i]*y[i];
-	}
-
-	b = (n*sumXY-sumX*sumY)/(n*sumX2-sumX*sumX);
- 	a = (sumY - b*sumX)/n;
-	cout << a << "\t" << "-> declive (3.2)" << endl;
-	cout << b << "\t" << "-> ordenada (3.2)" << endl;
 	
 	
 	
@@ -255,9 +239,9 @@ int main() {
 	//cout << miuTotal << endl;
 	
 	monteCarlo(miuTotal);
-	double rho = 1.82;
+	double rho = 10.22; // rho de Z = 42
 	vector<double> vec = distribuicaoFeixePoli();
-	//ex32(vec, rho);
+	ex32(vec, rho);
 
     
     return 0;
